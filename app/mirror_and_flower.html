@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="viewport" content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 		<!-- <title>three.js vr - 360 stereo video</title> -->
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -10,7 +13,7 @@
 	</head>
 	<body>
 		<div id="overlay">
-			<button id="startButton"type="button" class="btn btn-outline-danger">
+			<button id="startButton" type="button" class="btn btn-outline-danger">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-joystick" viewBox="0 0 16 16">
 					<path d="M10 2a2 2 0 0 1-1.5 1.937v5.087c.863.083 1.5.377 1.5.726 0 .414-.895.75-2 .75s-2-.336-2-.75c0-.35.637-.643 1.5-.726V3.937A2 2 0 1 1 10 2z"/>
 					<path d="M0 9.665v1.717a1 1 0 0 0 .553.894l6.553 3.277a2 2 0 0 0 1.788 0l6.553-3.277a1 1 0 0 0 .553-.894V9.665c0-.1-.06-.19-.152-.23L9.5 6.715v.993l5.227 2.178a.125.125 0 0 1 .001.23l-5.94 2.546a2 2 0 0 1-1.576 0l-5.94-2.546a.125.125 0 0 1 .001-.23L6.5 7.708l-.013-.988L.152 9.435a.25.25 0 0 0-.152.23z"/>
@@ -36,16 +39,28 @@
 			import { GUI } from './jsm/libs/dat.gui.module.js';
 
 			let camera, scene, renderer;
+			let quadBG;
 			let video;
 			const stats = new Stats();
 			let params = {
 				frame: 0,
 			}
 			
+			function isMobileSafari() {
+    			return navigator.userAgent.match(/(iPod|iPhone|iPad)/) && navigator.userAgent.match(/AppleWebKit/)
+			}
+
 			const startButton = document.getElementById( 'startButton' );
 			startButton.addEventListener( 'click', function () {
-				
-				document.documentElement.requestFullscreen();
+				var userAgent = window.navigator.userAgent;
+	
+				if (!isMobileSafari()) {
+					let elm = document.documentElement;
+					if (elm.requestFullscreen)
+						elm.requestFullscreen();
+					else if (elm.webkitRequestFullScreen)
+						elm.webkitRequestFullScreen();
+				}
 				init();
 				renderer.setAnimationLoop( render );
 			} );
@@ -60,7 +75,8 @@
 				const width = window.innerWidth;
 				const height = window.innerHeight;
 
-				camera = new THREE.PerspectiveCamera( 70, width / height, 1, 2000 );
+				camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+				// camera = new THREE.PerspectiveCamera( 70, width / height, 1, 2000 );
 
 				// video
 				video = document.getElementById( 'video' );
@@ -73,7 +89,7 @@
 				// scene.background = new THREE.Color( 0x101010 );
 
 				const material = new THREE.MeshBasicMaterial( { map: texture } );
-				let quadBG = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), material );
+				quadBG = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), material );
 				quadBG.position.z = - 1000;
 				quadBG.scale.set( width, height, 1 );
 				scene.add( quadBG );
@@ -99,12 +115,13 @@
 			}
 
 			function onWindowResize() {
+				const width = window.innerWidth;
+				const height = window.innerHeight;
 
-				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.aspect = width / height;
 				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
+				// quadBG.scale.set( width, height, 1 );
+				renderer.setSize( width, height );
 			}
 
 			function render() {
