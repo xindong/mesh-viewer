@@ -5,10 +5,18 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<link type="text/css" rel="stylesheet" href="main.css">
+		<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script> -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
 	</head>
 	<body>
 		<div id="overlay">
-			<button id="startButton">Start</button>
+			<button id="startButton"type="button" class="btn btn-outline-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-joystick" viewBox="0 0 16 16">
+					<path d="M10 2a2 2 0 0 1-1.5 1.937v5.087c.863.083 1.5.377 1.5.726 0 .414-.895.75-2 .75s-2-.336-2-.75c0-.35.637-.643 1.5-.726V3.937A2 2 0 1 1 10 2z"/>
+					<path d="M0 9.665v1.717a1 1 0 0 0 .553.894l6.553 3.277a2 2 0 0 0 1.788 0l6.553-3.277a1 1 0 0 0 .553-.894V9.665c0-.1-.06-.19-.152-.23L9.5 6.715v.993l5.227 2.178a.125.125 0 0 1 .001.23l-5.94 2.546a2 2 0 0 1-1.576 0l-5.94-2.546a.125.125 0 0 1 .001-.23L6.5 7.708l-.013-.988L.152 9.435a.25.25 0 0 0-.152.23z"/>
+				</svg>
+                Play Rebirth
+			</button>
 		</div>
 		<div id="container"></div>
 		
@@ -25,9 +33,14 @@
 
 			import * as THREE from '../build/three.module.js';
 			import Stats from './jsm/libs/stats.module.js';
+			import { GUI } from './jsm/libs/dat.gui.module.js';
 
 			let camera, scene, renderer;
+			let video;
 			const stats = new Stats();
+			let params = {
+				frame: 0,
+			}
 			
 			const startButton = document.getElementById( 'startButton' );
 			startButton.addEventListener( 'click', function () {
@@ -50,7 +63,7 @@
 				camera = new THREE.PerspectiveCamera( 70, width / height, 1, 2000 );
 
 				// video
-				const video = document.getElementById( 'video' );
+				video = document.getElementById( 'video' );
 				video.play();
 
 				const texture = new THREE.VideoTexture( video );
@@ -74,7 +87,11 @@
 				stats.domElement.style.position = 'absolute';
 				stats.domElement.style.top = '0px';
 
-				container.appendChild( stats.domElement );				
+				container.appendChild( stats.domElement );
+
+				const gui = new GUI();
+				gui.add( params, 'frame').min(0.0).max(video.duration * 30).listen();
+				gui.open();
 
 				//
 				window.addEventListener( 'resize', onWindowResize );
@@ -91,7 +108,7 @@
 			}
 
 			function render() {
-
+				params.frame = video.currentTime * 30;
 				renderer.render( scene, camera );
 				stats.update();
 			}
