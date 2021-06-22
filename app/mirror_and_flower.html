@@ -8,50 +8,46 @@
 	</head>
 	<body>
 		<div id="overlay">
-			<button id="startButton">Play</button>
-		</div>		
+			<button id="startButton">Start</button>
+		</div>
 		<div id="container"></div>
-
+		
 		<!-- <div id="info">
 			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> vr - 360 stereo video<br />
 			stereoscopic panoramic render by <a href="http://pedrofe.com/rendering-for-oculus-rift-with-arnold/" target="_blank" rel="noopener">pedrofe</a>. scene from <a href="http://www.meryproject.com/" target="_blank" rel="noopener">mery project</a>.
 		</div> -->
 
 		<video id="video" crossOrigin="anonymous" playsinline style="display:none">
-			<source src="mirror/Rebirth- Introducing photorealism in UE4.mp4">
+			<source src="mirror/mirror.mp4">
 		</video>
 
 		<script type="module">
 
 			import * as THREE from '../build/three.module.js';
-
-			document.documentElement.requestFullscreen();
+			import Stats from './jsm/libs/stats.module.js';
 
 			let camera, scene, renderer;
-
+			const stats = new Stats();
+			
 			const startButton = document.getElementById( 'startButton' );
 			startButton.addEventListener( 'click', function () {
-
+				
+				document.documentElement.requestFullscreen();
 				init();
-				animate();
-				startButton.style.visibility = "hidden";
-
+				renderer.setAnimationLoop( render );
 			} );
-
+			
 			function init() {
-
+				
 				const container = document.getElementById( 'container' );
-				container.addEventListener( 'click', function () {
-
-					video.play();
-
-				} );
-
-				const width = window.innerWidth || 2;
-				const height = window.innerHeight || 2;
+				
+				const overlay = document.getElementById( 'overlay' );
+				overlay.style.visibility = "hidden";
+				
+				const width = window.innerWidth;
+				const height = window.innerHeight;
 
 				camera = new THREE.PerspectiveCamera( 70, width / height, 1, 2000 );
-				camera.layers.enable( 1 ); // render left view when no stereo available
 
 				// video
 				const video = document.getElementById( 'video' );
@@ -61,11 +57,11 @@
 
 				// scene
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x101010 );
+				// scene.background = new THREE.Color( 0x101010 );
 
 				const material = new THREE.MeshBasicMaterial( { map: texture } );
 				let quadBG = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), material );
-				quadBG.position.z = - 500;
+				quadBG.position.z = - 1000;
 				quadBG.scale.set( width, height, 1 );
 				scene.add( quadBG );
 
@@ -74,6 +70,11 @@
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( width, height );
 				container.appendChild( renderer.domElement );
+
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+
+				container.appendChild( stats.domElement );				
 
 				//
 				window.addEventListener( 'resize', onWindowResize );
@@ -89,16 +90,10 @@
 
 			}
 
-			function animate() {
-
-				renderer.setAnimationLoop( render );
-
-			}
-
 			function render() {
 
 				renderer.render( scene, camera );
-
+				stats.update();
 			}
 
 		</script>
